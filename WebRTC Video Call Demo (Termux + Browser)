@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WebRTC Video Call Demo</title>
+  <style>
+    body { font-family: Arial; text-align: center; }
+    video { width: 45%; border: 1px solid #333; margin: 5px; }
+    textarea { width: 90%; height: 80px; }
+    button { padding: 8px 12px; margin: 5px; }
+  </style>
+</head>
+<body>
+
+<h2>WebRTC Video Call (Learning Demo)</h2>
+
+<video id="localVideo" autoplay muted></video>
+<video id="remoteVideo" autoplay></video><br>
+
+<button onclick="startCamera()">Start Camera</button>
+<button onclick="createOffer()">Create Offer</button>
+<button onclick="createAnswer()">Create Answer</button><br>
+
+<h4>Offer / Answer</h4>
+<textarea id="signal"></textarea><br>
+<button onclick="setSignal()">Set Signal</button>
+
+<script>
+let localStream;
+let pc = new RTCPeerConnection();
+
+pc.ontrack = e => remoteVideo.srcObject = e.streams[0];
+
+async function startCamera() {
+  localStream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
+  localVideo.srcObject = localStream;
+  localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+}
+
+async function createOffer() {
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  signal.value = JSON.stringify(offer);
+}
+
+async function createAnswer() {
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  signal.value = JSON.stringify(answer);
+}
+
+async function setSignal() {
+  const data = JSON.parse(signal.value);
+  await pc.setRemoteDescription(data);
+}
+</script>
+
+</body>
+</html>
